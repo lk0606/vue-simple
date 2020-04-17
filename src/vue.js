@@ -4,7 +4,7 @@
 const compileUtil = {
     /**
      * @param node
-     * @param expr 表达式
+     * @param expr 表达式 v-model="model" 中的 model {{text}} 中的 text
      * @param vm new Vue
      * @param eventName
      */
@@ -58,7 +58,10 @@ const compileUtil = {
     },
     // 动态属性
     bind(node, expr, vm, attrName) {
-
+        // console.log(node, expr, vm, attrName, 'node, expr, vm, attrName')
+        const value = this.getValue(expr, vm)
+        // console.log(value, 'bind')
+        this.updater.attrUpdater(node, attrName, value)
     },
     // 处理特殊值 
     getValue(expr, vm) {
@@ -93,6 +96,19 @@ const compileUtil = {
         },
         modelUpdater(node, value) {
             node.value = value
+        },
+        attrUpdater(node, attr, value) {
+            if(attr in node) {
+                // console.dir(node, 'node')
+                node[attr] = value
+            }
+            else if(attr.toLowerCase() === 'readonly') {
+                node.readOnly = value
+            } 
+            // else {
+            //     node.setAttribute(attr, value)
+            // }
+            // console.log(node, attr, value, 'attrUpdater')
         }
     }
 }
@@ -140,7 +156,6 @@ class Compiler {
     compileElement(node) {
         // v-text
         const [...attrs] = node.attributes
-        // console.log(attrs, 'attrs');
         if(attrs && attrs.length>0) {
             attrs.forEach(attr=> {
                 const { name, value } = attr
@@ -154,8 +169,13 @@ class Compiler {
                     // 删除绑定指令
                     node.removeAttribute(`v-${directive}`)
                 } else if (this.isAliasEvent(name)) { // @click
-                    const [ , eventName] = name.split('@')
+                    const [ ,eventName] = name.split('@')
                     compileUtil.on(node, value, this.vm, eventName)
+                } else if (this.isAliasBind(name)) {
+                    // console.log(name, 'name')
+                    const [ ,bindName] = name.split(':')
+                    compileUtil.bind(node, value, this.vm, bindName)
+                    node.removeAttribute(`:${bindName}`)
                 }
             })
         }
@@ -164,22 +184,7 @@ class Compiler {
         // {{}}
         let content = node.textContent
         if(/\{\{(.+?)\}\}/g.test(content)) {
-            console.log(content, 'content')
-            // const value = /\{\{(.+?)\}\}/g.exec(content)
-            // let arr = []
-            // const value = content.replace(/\{\{(.+?)\}\}/g, (...arg)=> {
-            //     console.log(arg, 'arg')
-            //     arr.push(arg[1])
-            //     return arg[1]
-            // })
-            // console.log(value, arr, 'value')
-            // arr.forEach(expr=> {
-            //     compileUtil.text(node, expr, this.vm)
-            // })
             compileUtil.text(node, content, this.vm)
-            // if(value && value[1]){
-            //     compileUtil.text(node, value[1], this.vm)
-            // }
         }
     }
 
@@ -189,7 +194,9 @@ class Compiler {
     isAliasEvent(attrName) {
         return attrName.startsWith('@')
     }
-
+    isAliasBind(attrName) {
+        return attrName.startsWith(':')
+    }
     node2Fragment(el) {
         // 创建文档碎片
         // console.log(el, 'els firstChild')

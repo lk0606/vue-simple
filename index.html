@@ -11,8 +11,12 @@
     <div v-text="text"></div>
     <div v-text="textData.name.name"></div>
     <!-- <div v-text="textData.list"></div> -->
-    <div v-html="html"></div>
-    <input type="text" v-model="model" />
+    <div v-html="html.div"></div>
+    <input type="text" 
+        v-bind:disabled="disabled" 
+        :readonly="readonly"
+        :maxlength="attrs.maxlength"
+        v-model="model" />
     <p>{{model}}</p>
     <p>
         <p>{{textData.name.num}}</p>
@@ -44,7 +48,12 @@
     const vm = new Vue({
         el: '#app',
         data: {
+            disabled: false,
+            readonly: false,
             num: 1,
+            attrs: {
+                maxlength: 6
+            },
             title: '差值表达式',
             title1: '表达式1111',
             text: '基本类型渲染： v-text',
@@ -59,8 +68,10 @@
                     { name: '王五' },
                 ]
             },
-            html: '<div>v-html: content</div>',
-            model: 'v-model：表单控件渲染',
+            html: {
+                div: '<div style="border: 1px solid red;">v-html: content</div>'
+            },
+            model: 'v-model',
         },
         methods: {
             handleClick() {
