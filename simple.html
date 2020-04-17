@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<div>
+    <input id="input" type="text"/>
+    <p>v-model: <span id="span"></span></p>
+</div>
+</body>
+</html>
+
+<script>
+    const input = document.getElementById('input')
+
+    let obj = {
+        inputVal: ''
+    }
+    let newValue
+    Object.defineProperty(obj, 'inputVal', {
+        get() {
+            return newValue
+        },
+        set(newVal) {
+            newValue = newVal
+            console.log(newVal, 'set newVal')
+            return newVal
+        }
+    })
+    input.addEventListener('input', (e)=> {
+        console.log(e.target.value, 'e')
+        obj.inputVal = e.target.value
+        console.log(obj, 'obj')
+        document.getElementById('span').innerHTML = obj.inputVal
+    })
+
+</script>
