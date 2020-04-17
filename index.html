@@ -13,7 +13,9 @@
     <!-- <div v-text="textData.list"></div> -->
     <div v-html="html"></div>
     <input type="text" v-model="model" />
+    <p>{{model}}</p>
     <p>
+        <p>{{textData.name.num}}</p>
         <button type="button" v-on:click="handleClick">v-on:click</button>
         <button type="button" v-on:click="handleClick">@click</button>
     </p>
@@ -42,12 +44,14 @@
     const vm = new Vue({
         el: '#app',
         data: {
+            num: 1,
             title: '差值表达式',
             title1: '表达式1111',
             text: '基本类型渲染： v-text',
             textData: {
                 name: {
-                    name: '复杂类型渲染：v-text'
+                    name: '复杂类型渲染：v-text',
+                    num: 1,
                 },
                 list: [
                     { name: '张三' },
@@ -60,6 +64,7 @@
         },
         methods: {
             handleClick() {
+                this.textData.name.num++
                 console.log(this, 'click')
             }
         }

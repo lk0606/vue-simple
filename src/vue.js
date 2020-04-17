@@ -39,6 +39,14 @@ const compileUtil = {
     // 表单
     model(node, expr, vm) {
         const value = this.getValue(expr, vm)
+        new Watcher(vm, expr, (newVal)=> {
+            // console.log(node, newVal, 'newVal')
+            this.updater.modelUpdater(node, newVal)
+        })
+        // 视图改变数据
+        node.addEventListener('input', e=> {
+            this.setInputVal(expr, vm, e.target.value)
+        })
         this.updater.modelUpdater(node, value)
     },
     // 事件
@@ -58,6 +66,13 @@ const compileUtil = {
         return expr.split('.').reduce((data, cur)=> {
             // console.log(cur, 'getValue cur')
             return data[cur]
+        }, vm.$data)
+    },
+    setInputVal(expr, vm, inputVal) {
+        // textData.name [textData, name]
+        return expr.split('.').reduce((data, cur)=> {
+            // console.log(cur, 'getValue cur')
+            data[cur] = inputVal
         }, vm.$data)
     },
     getContentVal(expr, vm) {
@@ -203,6 +218,20 @@ class Vue {
             new Observer(this.$data)
             // 2. 实现一个指令解析器
             new Compiler(this.$el, this)
+            // 3. 设置代理 this.$data.msg => this.msg
+            this.proxyData(this.$data)
         }
+    }
+    proxyData(data) {
+        for(const key in data) {
+            Object.defineProperty(this, key, {
+                get() {
+                    return data[key]
+                },
+                set(newVal) {
+                    data[key] = newVal
+                }
+            })
+        } 
     }
 }
